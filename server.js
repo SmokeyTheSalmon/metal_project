@@ -16,23 +16,36 @@ app.get('/scrape', function(req, res){
     if(!error){
       var $ = cheerio.load(html);
       var json = $('body').prevObject.text();
-      res.send("Scraped " + country + "!");
-
       json = JSON.parse(json);
+
       console.log(json.iTotalRecords);
-      round = Math.ceil(json.iTotalRecords / 500);
-      console.log(round);
-      // process.exit(0);
+      rounds = Math.ceil(json.iTotalRecords / 500);
+      console.log(rounds);
     }
   })
 
-  for(var i = 0; i < rounds; i++){
+  var i = 0;
+  while(i < rounds){
     var page = i * 500;
-    url = "http://www.metal-archives.com/browse/ajax-country/c/" + country + "/json/1?sEcho=1&iDisplayStart=" + page.toString();
-        // console.log(json);
-        fs.writeFile('data/' + country + '.json', JSON.stringify(json, null, 2), function(err) {
-          console.log("Mission succesful");
-        })
+
+    function scrape(page) {
+      url = "http://www.metal-archives.com/browse/ajax-country/c/" + country + "/json/1?sEcho=1&iDisplayStart=" + page.toString();
+
+      request(url, function(error, response, html) {
+        if(!error) {
+          var $ = cheerio.load(html);
+          var json = $('body').prevObject.text()
+          json = JSON.parse(json);
+
+          console.log(page);
+          i++;
+          // fs.writeFile('data/' + country + '.json', JSON.stringify(json, null, 2), function(err) {
+          //   console.log("Mission succesful");
+          // })
+        }
+      })
+    }
+    scrape(page);
   }
 })
 
